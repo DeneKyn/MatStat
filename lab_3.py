@@ -1,17 +1,26 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import sympy as sp
 import matplotlib.pyplot as plt
 from prettytable import PrettyTable
 import math
+from collections import Counter
 
 x = sp.symbols('x')
 expression = sp.exp(x)
 y_function = sp.lambdify(x, expression, 'numpy')
 a = -7
 b = 5
-n_xi = 200
-n_kolmo = 200
-n_mizes = 200
+a_x = np.exp(a)
+b_x = np.exp(b)
+N_HIKVADRAT = 200
+N_KOLM = 30
+N_MIZ = 50
+HIKVADRAT = 15.086
+KOLM = 1.63
+MIZ = 0.744
 h = []
 A = []
 B = []
@@ -20,6 +29,7 @@ f = []
 p = []
 p_v = []
 xi_kvad = []
+
 
 def elements_in_interval(start, end):
     count = 0
@@ -31,7 +41,7 @@ def elements_in_interval(start, end):
     return count
 
 
-def uniform_distribution(n, a, b):
+def create_sample(n, a, b):
     x = []
     y = []
     x_random = np.random.uniform(0, 1, n)
@@ -41,14 +51,18 @@ def uniform_distribution(n, a, b):
     return x, y
 
 
-def equal_interval():
+def equal_probability():
     for i in range(0, M):
-        h.append(round((temp[-1] - temp[0]) / M, 5))
-        A.append(round(temp[0] + i * h[i], 5))
-        B.append(round(temp[0] + (i + 1) * h[i], 5))
-        v.append(elements_in_interval(A[i], B[i]))
-        f.append(round(v[i] / (n_xi * h[i]), 10))
+        v.append(int(N_HIKVADRAT / M))
+    A.append(round(temp[0], 5))
+    for i in range(1, M):
+        A.append(round((temp[i * v[i] - 1] + temp[i * v[i]]) / 2, 5))
+    B.extend(A[1:])
+    B.append(round(temp[-1], 5))
 
+    for i in range(0, M):
+        h.append(round(B[i] - A[i], 5))
+        f.append(round(v[i] / (N_HIKVADRAT * h[i]), 10))
 
 
 def create_table(check):
@@ -79,27 +93,36 @@ def polygon():
 def theoretical_func(x_local):
         return (np.log(x_local) - a) * 1/(b-a)
 
+def theoretical_func_graphic(a, b):
+    x = np.arange(a, b, 0.1)
+    y = np.arange(a, b, 0.1)
+    for i in range(len(x)):
+        y[i] = (np.log(x[i]) + 5) / 12
+    plt.plot(x, y, color='r')
+    plt.grid(True)
+
+
+
 def theor_f():
     x = np.arange(np.exp(a), np.exp(b), 0.1)
     y = 1 / (12 * x)
     plt.plot(x, y, color='yellow')
 
+
 def theoretical_probability(M):
     for i in range(M):
-        #p.append(y_function(B[i]) - y_function(A[i]))
         p.append(theoretical_func(B[i]) - theoretical_func(A[i]))
-        p_v.append(v[i] / n_xi)
-        xi_kvad.append((n_xi * (p[i] - p_v[i])**2) / p[i])
+        p_v.append(v[i] / N_HIKVADRAT)
+        xi_kvad.append((N_HIKVADRAT * (p[i] - p_v[i]) ** 2) / p[i])
     return sum(xi_kvad), sum(p)
 
 
 def xi_kvadrat():
 
     sum_xi_kvad, lol_p = theoretical_probability(M)
-    print("Промежуточный результат метода Хи квадрат:")
     print(create_table(2))
-    print("Хи квадрат = {}".format(sum_xi_kvad))
-    print(lol_p)
+    print(f'Хи квадрат = {sum_xi_kvad} \t {HIKVADRAT}')
+
 
 def empirical_func(x, y):
     cur = -10e9
@@ -111,23 +134,34 @@ def empirical_func(x, y):
         ind += 1
     return (ind - 1) / len(y)
 
-def kolmogorov(y):
-    cur = 0.0
-    for i in range(0, len(y)):
-        cur = max(abs(empirical_func(y[i], y) - theoretical_func(y[i])), cur)
-    print(np.sqrt(len(y)) * cur)
+def empirical_func_graphic(sample):
 
-def main_kolmogorov():
-    x, y = uniform_distribution(n_kolmo, a, b)
+    n = sum(sample.values())
+    k = sorted(sample.keys())
+    p = 0
+    plt.plot([0, k[0]], [0, 0], marker='.')
+    for i in range(1, len(c)):
+        p += c.get(k[i - 1]) / n
+
+        plt.plot([k[i - 1], k[i]], [p, p], marker='.')
+    plt.grid(True)
+
+
+
+
+def kolmogorov():
+    x, y = create_sample(N_KOLM, a, b)
     y.sort()
-    print("Критерий Колмогорова")
+
     cur = 0.0
     for i in range(0, len(y)):
         cur = max(abs(empirical_func(y[i], y) - theoretical_func(y[i])), cur)
-    print(np.sqrt(len(y)) * cur)
+    #print(f'max|F*(x) - F0(x)| = {cur}')
+    print(f'Критерий Колмогорова" = {np.sqrt(len(y)) * cur}\t{KOLM}')
+
 
 def mises():
-    x, y = uniform_distribution(n_mizes, a, b)
+    x, y = create_sample(N_MIZ, a, b)
     y.sort()
     temp = []
 
@@ -136,30 +170,36 @@ def mises():
     C = 1 / (12 * len(y))
     for tmp in temp:
         C += tmp
-    print("Критерий Мизеса:")
-    print(C)
+    print(f'Критерий Мизеса = {C}\t{MIZ}')
 
 
 
-X, temp = uniform_distribution(n_xi, a, b)
+
+
+X, temp = create_sample(N_HIKVADRAT, a, b)
 temp = sorted(temp)
+c = Counter(temp)
 
-if n_xi <= 100:
-    M = int(np.sqrt(n_xi))
+if N_HIKVADRAT <= 100:
+    M = int(np.sqrt(N_HIKVADRAT))
 else:
-    M = int(4 * math.log10(n_xi))
+    M = int(4 * math.log10(N_HIKVADRAT))
 
-equal_interval()
+equal_probability()
 
 print(create_table(1))
 
-hist("Гистограмма равноинтервальным методам")
-polygon()
+hist("Гистограмма равновероятностная методам")
+#polygon()
 theor_f()
-ylimit = max(f) + max(f) * 0.10
+ylimit = 0.08
 plt.ylim(top=ylimit)
 plt.show()
 
+empirical_func_graphic(c)
+theoretical_func_graphic(a_x, b_x)
+plt.show()
+
 xi_kvadrat()
-main_kolmogorov()
+kolmogorov()
 mises()

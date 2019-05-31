@@ -1,9 +1,10 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import sympy as sp
 import matplotlib.pyplot as plt
-from collections import Counter
 from prettytable import PrettyTable
-import array as arr
 import math
 
 x = sp.symbols('x')

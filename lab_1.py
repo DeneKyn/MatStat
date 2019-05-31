@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+
 import numpy as np
 import sympy as sp
 import matplotlib.pyplot as plt
@@ -17,7 +21,7 @@ def create_sample(n, a, b):
 def empirical_func(sample):
     #print(sample)
 
-    n = sum(sample.values())  # Объём выборки
+    n = sum(sample.values())
     k = sorted(sample.keys())
     p = 0
 
