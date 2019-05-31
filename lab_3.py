@@ -9,12 +9,12 @@ import math
 from collections import Counter
 
 x = sp.symbols('x')
-expression = sp.exp(x)
+expression = abs(x)
 y_function = sp.lambdify(x, expression, 'numpy')
-a = -7
-b = 5
-a_x = np.exp(a)
-b_x = np.exp(b)
+a = -3
+b = 3
+a_x = 0
+b_x = abs(b)
 N_HIKVADRAT = 200
 N_KOLM = 30
 N_MIZ = 50
@@ -91,21 +91,21 @@ def polygon():
 
 
 def theoretical_func(x_local):
-        return (np.log(x_local) - a) * 1/(b-a)
+        return x_local/3
 
 def theoretical_func_graphic(a, b):
     x = np.arange(a, b, 0.1)
     y = np.arange(a, b, 0.1)
     for i in range(len(x)):
-        y[i] = (np.log(x[i]) + 5) / 12
+        y[i] = (x[i])  /3
     plt.plot(x, y, color='r')
     plt.grid(True)
 
 
 
 def theor_f():
-    x = np.arange(np.exp(a), np.exp(b), 0.1)
-    y = 1 / (12 * x)
+    x = [0,3]
+    y = [1/3,1/3]
     plt.plot(x, y, color='yellow')
 
 
@@ -192,8 +192,7 @@ print(create_table(1))
 hist("Гистограмма равновероятностная методам")
 #polygon()
 theor_f()
-ylimit = 0.08
-plt.ylim(top=ylimit)
+
 plt.show()
 
 empirical_func_graphic(c)
